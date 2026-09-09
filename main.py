@@ -52,6 +52,8 @@ def pending_followers() -> None:
     pending.sort(key=lambda x: x[1])
     column_width = max(len(item[0]) for item in pending)
     padding = 1
+    print("Username  Days Since Request")
+    print("-"*28)
     for p in pending:
         print(f"{p[0]} {p[1].days:>{column_width+padding-len(p[0])+len(str(p[1].days))}}")
     
