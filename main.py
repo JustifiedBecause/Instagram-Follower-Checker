@@ -1,27 +1,49 @@
 import json
 from datetime import datetime
+from pathlib import Path
+
+export_folder = None
 
 def main():
-    mode = mode_select()
-    if mode == 0:
-        not_following_back()
-    elif mode == 1:
-        pending_followers()
-    else:
-        print("Not a valid mode")
-        main()
+    try:
+        while True:
+            global export_folder
+            while not export_folder:
+                export_folder = get_folder()
+            mode = -1
+            while mode < 0:
+                mode = mode_select()
+                if mode == 0:
+                    not_following_back()
+                elif mode == 1:
+                    pending_followers()
+                elif mode == 9:
+                    print("Exiting...")
+                    return
+                else:
+                    print("Not a valid mode")
+                    mode = -1
+    except KeyboardInterrupt:
+        print("Exiting...")
+        return
 
 
 ######## MODE FUNCTIONS ########
 
 #Generate lists of people you follow who don't follow back. Includes deactivated accounts
 def not_following_back() -> None:
-        follower_file = input("Enter Followers path: ")
+        follower_file = export_folder / 'connections/followers_and_following/followers_1.json'
+        if not follower_file.exists():
+            print(f"Follower file at {follower_file} not found.")
+            return
         followers_json = load_file(follower_file)
         if not followers_json:
             print("Error loading follower file")
             return
-        following_file = input("Enter Following path: ")
+        following_file = export_folder / 'connections/followers_and_following/following.json'
+        if not following_file.exists():
+            print(f"Following file at {following_file} not found.")
+            return
         following_json = load_file(following_file)
         if not following_json:
             print("Error loading following file")
@@ -34,10 +56,14 @@ def not_following_back() -> None:
         print("The following do not follow you back:")
         for ex in exclude:
             print(f"    {ex}")
+        print()
 
 #List of pending follow requests and how long they've been pending
 def pending_followers() -> None:
-    pending_file = input("Enter Pending Followers path: ")
+    pending_file = export_folder / 'connections/followers_and_following/pending_follow_requests.json'
+    if not pending_file.exists():
+        print(f"Follower file at {pending_file} not found.")
+        return
     pending_json = load_file(pending_file)
     if not pending_json:
         print("Error loading pending file")
@@ -56,12 +82,13 @@ def pending_followers() -> None:
     print("-"*28)
     for p in pending:
         print(f"{p[0]} {p[1].days:>{column_width+padding-len(p[0])+len(str(p[1].days))}}")
+    print()
     
 
 ######## HELPER FUNCTIONS ########
 
 #Datastructure is inconsistent, need to return the object and type
-def load_file(path: str) -> dict | list | None:
+def load_file(path: Path) -> dict | list | None:
     try:
         with open(path,'r') as f:
             js = json.load(f)
@@ -75,11 +102,17 @@ def load_file(path: str) -> dict | list | None:
 
 def mode_select() -> int:
     try:
-        return int(input("""Mode?\n0) Not following back\n1) Pending Requests\n> """))
+        return int(input("""Mode?\n0) Not following back\n1) Pending Requests\n9) Exit\n> """))
     except ValueError:
         return -1
+
+def get_folder() -> Path | None:
+    path = Path(input("Path to export folder: ").strip('\"'))
+    if not path.exists():
+        print(f"{path} not found")
+        return None
+    return path
 
 
 if __name__ == '__main__':
     main()
-    input("Press Enter to continue...")
