@@ -2,21 +2,20 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-export_folder = None
 
 def main():
     try:
+        export_folder = None
         while True:
-            global export_folder
             while not export_folder:
                 export_folder = get_folder()
             mode = -1
             while mode < 0:
                 mode = mode_select()
                 if mode == 0:
-                    not_following_back()
+                    not_following_back(export_folder)
                 elif mode == 1:
-                    pending_followers()
+                    pending_followers(export_folder)
                 elif mode == 9:
                     print("Exiting...")
                     return
@@ -31,7 +30,7 @@ def main():
 ######## MODE FUNCTIONS ########
 
 #Generate lists of people you follow who don't follow back. Includes deactivated accounts
-def not_following_back() -> None:
+def not_following_back(export_folder: Path) -> None:
         follower_file = export_folder / 'connections/followers_and_following/followers_1.json'
         if not follower_file.exists():
             print(f"Follower file at {follower_file} not found.")
@@ -59,7 +58,7 @@ def not_following_back() -> None:
         print()
 
 #List of pending follow requests and how long they've been pending
-def pending_followers() -> None:
+def pending_followers(export_folder: Path) -> None:
     pending_file = export_folder / 'connections/followers_and_following/pending_follow_requests.json'
     if not pending_file.exists():
         print(f"Follower file at {pending_file} not found.")
