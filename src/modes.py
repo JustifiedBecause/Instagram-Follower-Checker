@@ -2,6 +2,7 @@ from pathlib import Path
 from datetime import datetime
 from abc import ABC, abstractmethod
 from utils import load_file, get_folder
+from data_structures import *
 
 class Mode(ABC):
     def __init__(self, path: Path):
@@ -30,13 +31,13 @@ class NotFollowingBackMode(Mode):
             print("Error loading following file")
             return
 
-        followers = set(user['string_list_data'][0]['value'] for user in followers_json)
-        following = set(user['title'] for user in following_json['relationships_following'])
+        followers = [parse_follower(user) for user in followers_json]
+        following = [parse_following(user) for user in following_json['relationships_following']]
 
-        exclude = following - followers
-        print("The following do not follow you back:")
+        exclude = [x for x in following if x not in followers]
+        print("These users do not follow you back:")
         for ex in exclude:
-            print(f"    {ex}")
+            print(f"    {ex.username}")
         print()
 
 class PendingFollowersMode(Mode):
@@ -53,16 +54,14 @@ class PendingFollowersMode(Mode):
         pending = []
         print("Pending follow requests:")
         for user in pending_json:
-            time_since = td - datetime.fromtimestamp(float(user['timestamp']))
-            username = next((label['value'] for label in user['label_values'] if label['label'] == 'Username'))
-            pending.append((username,time_since))
-        pending.sort(key=lambda x: x[1])
-        column_width = max(len(item[0]) for item in pending)
+            pending.append(parse_pending_followers(user))
+        pending.sort(key=lambda x: x.days_since)
+        column_width = max(len(item.username) for item in pending)
         padding = 1
         print("Username  Days Since Request")
         print("-"*28)
         for p in pending:
-            print(f"{p[0]} {p[1].days:>{column_width+padding-len(p[0])+len(str(p[1].days))}}")
+            print(f"{p.username} {p.days_since:>{column_width+padding-len(p.username)+len(str(p.days_since))}}")
         print()
 
 

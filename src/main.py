@@ -19,9 +19,9 @@ def main():
             mode = MODES.get(choice)    
             if mode is None:
                 print("Not a valid mode")
-                mode = -1
-            mode(export_folder).run()
-            
+            else:    
+                mode(export_folder).run()
+
     except KeyboardInterrupt:
         print("Exiting...")
         return
