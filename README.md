@@ -1,5 +1,5 @@
 # Instagram-Follower-Checker
-Python script to parse and process downloaded Instagram follower data
+Python script to parse and process downloaded Instagram follower data.
 Subject to break at anytime, Meta often makes breaking changes to their data structures
 
 Modes:
