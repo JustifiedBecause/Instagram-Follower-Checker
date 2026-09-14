@@ -1,12 +1,13 @@
 from pathlib import Path
 from datetime import datetime
 from abc import ABC, abstractmethod
-from utils import load_file, get_folder
+from zipfile import ZipFile
+from utils import load_file_from_zip
 from data_structures import *
 
 class Mode(ABC):
     def __init__(self, path: Path):
-        self.export_zip = path
+        self.export_zip = ZipFile(path,'r')
 
     @abstractmethod
     def run(self):
@@ -14,26 +15,13 @@ class Mode(ABC):
 
 class NotFollowingBackMode(Mode):
     def run(self):
-        follower_file = self.export_zip / 'connections/followers_and_following/followers_1.json'
-        if not follower_file.exists():
-            print(f"Follower file at {follower_file} not found.")
-            return
-        followers_json = load_file(follower_file)
-        if not followers_json:
-            print("Error loading follower file")
-            return
-        following_file = self.export_zip / 'connections/followers_and_following/following.json'
-        if not following_file.exists():
-            print(f"Following file at {following_file} not found.")
-            return
-        following_json = load_file(following_file)
+        followers_json = load_file_from_zip(self.export_zip,'connections/followers_and_following/followers_1.json')
+        following_json = load_file_from_zip(self.export_zip, 'connections/followers_and_following/following.json')
         if not following_json:
             print("Error loading following file")
             return
-
         followers = [parse_follower(user) for user in followers_json]
         following = [parse_following(user) for user in following_json['relationships_following']]
-
         exclude = [x for x in following if x not in followers]
         print("These users do not follow you back:")
         for ex in exclude:
@@ -42,11 +30,7 @@ class NotFollowingBackMode(Mode):
 
 class PendingFollowersMode(Mode):
     def run(self):
-        pending_file = self.export_zip / 'connections/followers_and_following/pending_follow_requests.json'
-        if not pending_file.exists():
-            print(f"Follower file at {pending_file} not found.")
-            return
-        pending_json = load_file(pending_file)
+        pending_json = load_file_from_zip(self.export_zip, 'connections/followers_and_following/pending_follow_requests.json')
         if not pending_json:
             print("Error loading pending file")
             return
