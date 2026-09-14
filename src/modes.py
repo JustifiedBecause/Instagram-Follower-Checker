@@ -20,8 +20,8 @@ class NotFollowingBackMode(Mode):
         if not following_json:
             print("Error loading following file")
             return
-        followers = [parse_follower(user) for user in followers_json]
-        following = [parse_following(user) for user in following_json['relationships_following']]
+        followers = [UserFollower.parse_follower(user) for user in followers_json]
+        following = [UserFollower.parse_following(user) for user in following_json['relationships_following']]
         exclude = [x for x in following if x not in followers]
         print("These users do not follow you back:")
         for ex in exclude:
