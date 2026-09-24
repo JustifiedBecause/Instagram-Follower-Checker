@@ -38,7 +38,7 @@ class PendingFollowersMode(Mode):
         pending = []
         print("Pending follow requests:")
         for user in pending_json:
-            pending.append(parse_pending_followers(user))
+            pending.append(PendingFollower.parse_pending_followers(user))
         pending.sort(key=lambda x: x.days_since)
         column_width = max(len(item.username) for item in pending)
         padding = 1
